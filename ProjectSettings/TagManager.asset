@@ -3,7 +3,13 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - FxTemporaire
+  - Leg
+  - Arm
+  - Body
+  - Head
+  - Enemy
   layers:
   - Default
   - TransparentFX
@@ -40,4 +46,13 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: HighSort
+    uniqueID: 2951561877
+    locked: 0
+  - name: MiddleSort
+    uniqueID: 1378686807
+    locked: 0
+  - name: LowSort
+    uniqueID: 15690969
     locked: 0
