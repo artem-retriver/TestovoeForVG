@@ -1,8 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.Serialization;
+using UnityEngine.SceneManagement;
 
 namespace Player
 {
@@ -28,7 +27,6 @@ namespace Player
             _currentHealth = _maxHealth;
             _uiController.ChangeHealthBarScore(_currentHealth, _maxHealth);
             ChangeActiveAllGuns(false);
-            //ChooseGun(_currentIndexGun);
         }
 
         public void CheckToChangeWeapon(int indexWeapon)
@@ -192,7 +190,14 @@ namespace Player
         
             if (_currentHealth <= 0)
             {
-                Debug.Log("YOU DIE!!!");
+                if (SceneManager.GetActiveScene().buildIndex == 0)
+                {
+                    StartCoroutine(_uiController.ShowNextScene(true, false));
+                }
+                else
+                {
+                    StartCoroutine(_uiController.ShowNextScene(false, false));
+                }
             }
         }
     }

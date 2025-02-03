@@ -3,12 +3,12 @@ using UnityEngine;
 
 public class Item : MonoBehaviour
 {
+    [Header("Properties")]
     public Cell cellPrefab;
     public int countItems;
     public string itemName;
     
     private UIController _uiController;
-    //private PlayerController _playerController;
     private Rigidbody _rigidbody;
 
     private void Start()

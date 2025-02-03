@@ -34,8 +34,6 @@ public class Cell : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         _backpack = GetComponentInParent<Backpack>();
         _cellButton = gameObject.GetComponent<Button>();
         _cellButton.onClick.AddListener(CheckUseCurrentItem);
-        
-        //_playerController.ChangeHaveGun(_nameItem);
     }
     
     public void OnPointerEnter(PointerEventData eventData)

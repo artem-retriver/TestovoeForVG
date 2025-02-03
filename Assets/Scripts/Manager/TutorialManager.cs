@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class TutorialManager : MonoBehaviour
 {
+    [Header("Wall")]
     public GameObject wallPrefab;
 
     public void ShowOffWall()

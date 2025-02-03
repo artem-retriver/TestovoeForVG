@@ -33,7 +33,6 @@ public class UIController : MonoBehaviour
     
     [Space(10)] 
     [Header("Show/Hide")] 
-    //public GameObject showGameAnimation;
     public GameObject hideGameAnimation;
     
     private Color _currentColorAim;
