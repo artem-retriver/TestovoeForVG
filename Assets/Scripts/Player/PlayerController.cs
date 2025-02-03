@@ -1,31 +1,47 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Player
 {
     public class PlayerController : MonoBehaviour
     {
+        private UIController _uiController;
         private List<PlayerGun> _playerGuns;
-        private PlayerUI _playerUI;
         
         private float _maxHealth = 100;
         private float _currentHealth;
         private int _currentIndexGun;
+        private bool _isStartShowGun;
         private bool _isChangeWeapon;
+        private bool _isHaveMachineGun;
+        private bool _isHaveHeavyMachineGun;
+        private bool _isHaveSniperGun;
 
         private void Start()
         {
             _playerGuns = new List<PlayerGun>(GetComponentsInChildren<PlayerGun>());
-            _playerUI = GetComponentInChildren<PlayerUI>();
+            _uiController = FindObjectOfType<UIController>();
         
             _currentHealth = _maxHealth;
-            _playerUI.ChangeHealthBarScore(_currentHealth, _maxHealth);
-            ChooseGun(_currentIndexGun);
+            _uiController.ChangeHealthBarScore(_currentHealth, _maxHealth);
+            ChangeActiveAllGuns(false);
+            //ChooseGun(_currentIndexGun);
         }
 
         public void CheckToChangeWeapon(int indexWeapon)
         {
+            if (_isStartShowGun == false)
+            {
+                _isStartShowGun = true;
+                
+                StartCoroutine(ShowNewGun(indexWeapon));
+            
+                _currentIndexGun = indexWeapon;
+            }
+            
             if (_currentIndexGun != indexWeapon && _playerGuns[_currentIndexGun].isReloading == false)
             {
                 StartCoroutine(ShowNewGun(indexWeapon));
@@ -44,28 +60,135 @@ namespace Player
             ChooseGun(indexWeapon);
         }
 
-        private void ChooseGun(int indexWeapon)
+        public void ChooseGun(int indexWeapon)
         {
             ChangeActiveAllGuns(false);
-        
             _playerGuns[indexWeapon].gameObject.SetActive(true);
-            _playerUI.ChangeAmmoScore(_playerGuns[indexWeapon].currentAmmo, _playerGuns[indexWeapon].currentMaxAmmo);
+            _uiController.ChangeActiveAmmoPanel(true);
+            _uiController.ChangeAmmoScore(_playerGuns[indexWeapon].currentAmmo, _playerGuns[indexWeapon].currentMaxAmmo);
+        }
+
+        public bool CheckToHaveGun(string nameGun)
+        {
+            switch (nameGun)
+            {
+                case "MachineGun":
+                {
+                    if (_isHaveMachineGun)
+                    {
+                        return true;
+                    }
+                    break;
+                }
+                case "HeavyMachineGun":
+                {
+                    if (_isHaveHeavyMachineGun)
+                    {
+                        return true;
+                    }
+                    break;
+                }
+                case "SniperGun":
+                {
+                    if (_isHaveSniperGun)
+                    {
+                        return true;
+                    }
+                    break;
+                }
+            }
+            return false;
+        }
+
+        public void ChangeHaveGun(string nameGun, bool isNeedChooseGun = true)
+        {
+            switch (nameGun)
+            {
+                case "MachineGun":
+                {
+                    _isHaveMachineGun = true;
+
+                    if (isNeedChooseGun)
+                    {
+                        ChooseGun(0);
+                    }
+                    break;
+                }
+                case "HeavyMachineGun":
+                {
+                    _isHaveHeavyMachineGun = true;
+                    
+                    if (isNeedChooseGun)
+                    {
+                        ChooseGun(1);
+                    }
+                    break;
+                }
+                case "SniperGun":
+                {
+                    _isHaveSniperGun = true;
+                    
+                    if (isNeedChooseGun)
+                    {
+                        ChooseGun(2);
+                    }
+                    break;
+                }
+            }
+        }
+
+        public bool CheckHaveAllGun()
+        {
+            if (_isHaveMachineGun && _isHaveHeavyMachineGun && _isHaveSniperGun)
+            {
+                var tutorialManager = FindObjectOfType<TutorialManager>();
+
+                if (tutorialManager != null)
+                {
+                    tutorialManager.ShowOffWall();
+                }
+                return true;
+            }
+            return false;
         }
 
         private void ChangeActiveAllGuns(bool active)
         {
+            if (_playerGuns == null)
+            {
+                return;
+            }
+            
             foreach (var playerGun in _playerGuns)
             {
                 playerGun.gameObject.SetActive(active);
             }
+        }
+
+        public void TakeHealth(int amount)
+        {
+            _currentHealth += amount;
+
+            if (_currentHealth > _maxHealth)
+            {
+                _currentHealth = _maxHealth;
+            }
+        
+            _uiController.InstantiateGetHealth();
+            _uiController.ChangeHealthBarScore(_currentHealth, _maxHealth);
+        }
+
+        public void TakeAmmo(int amount)
+        {
+            _playerGuns[_currentIndexGun].IncreaseCurrentMaxAmmo(amount);
         }
     
         public void TakeDamage(float amount)
         {
             _currentHealth -= amount;
         
-            _playerUI.InstantiateGetHit();
-            _playerUI.ChangeHealthBarScore(_currentHealth, _maxHealth);
+            _uiController.InstantiateGetHit();
+            _uiController.ChangeHealthBarScore(_currentHealth, _maxHealth);
         
             if (_currentHealth <= 0)
             {

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Player
 {
-    public class PlayerMoveController : PlayerController
+    public class PlayerMoveController : MonoBehaviour
     {
         [Header("Properties")]
         public float speed = 5f;
@@ -11,6 +11,7 @@ namespace Player
     
         private Camera _playerCamera;
         private CharacterController _controller;
+        private Rigidbody _rigidbody;
         private Vector3 _moveDirection;
         private float _verticalRotation;
 
@@ -18,17 +19,25 @@ namespace Player
         {
             _playerCamera = Camera.main;
             _controller = GetComponent<CharacterController>();
-            Cursor.lockState = CursorLockMode.Locked;
+            _rigidbody = GetComponent<Rigidbody>();
         }
 
         private void Update()
         {
+            if (Cursor.lockState == CursorLockMode.None)
+            {
+                _rigidbody.isKinematic = true;
+                return;
+            }
+            
             MovePlayer();
             RotatePlayer();
         }
     
         private void MovePlayer()
         {
+            _rigidbody.isKinematic = false;
+            
             float moveX = Input.GetAxis("Horizontal");
             float moveZ = Input.GetAxis("Vertical");
         

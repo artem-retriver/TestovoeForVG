@@ -21,12 +21,12 @@ namespace Player
         public float cameraShake;
     
         private Camera _playerCamera;
-        private PlayerUI _playerUI;
+        private UIController _playerUI;
     
         private void Start()
         {
             _playerCamera = Camera.main;
-            _playerUI = FindObjectOfType<PlayerUI>();
+            _playerUI = FindObjectOfType<UIController>();
         
             currentAmmo = maxAmmo;
             currentMaxAmmo = maxAmmo;
@@ -35,6 +35,11 @@ namespace Player
 
         private void Update()
         {
+            if (Cursor.lockState == CursorLockMode.None)
+            {
+                return;
+            }
+            
             if (isReloading)
             {
                 return;
@@ -91,6 +96,14 @@ namespace Player
             _playerUI.ChangeActiveAim(isAim);
         }
 
+        public void IncreaseCurrentMaxAmmo(int countAmmo)
+        {
+            currentMaxAmmo += countAmmo;
+            
+            _playerUI.PlayAmmoAnimation("Increase");
+            _playerUI.ChangeAmmoScore(currentAmmo, currentMaxAmmo);
+        }
+
         private void Shoot()
         {
             currentAmmo--;
@@ -126,7 +139,7 @@ namespace Player
             {
                 isReloading = true;
             
-                _playerUI.PlayReloadAnimation();
+                _playerUI.PlayAmmoAnimation("Reload");
                 gunAnimator.SetTrigger(isAiming ? "ReloadWithAim" : "ReloadWithoutAim");
             });
         

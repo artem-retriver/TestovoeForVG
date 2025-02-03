@@ -1,4 +1,5 @@
 using System.Collections;
+using DG.Tweening;
 using Player;
 using UnityEngine;
 using UnityEngine.AI;
@@ -9,7 +10,12 @@ namespace Enemy
     {
         [Header("Controllers")]
         public PlayerController player;
-    
+
+        [Space(10)] 
+        [Header("Items")] 
+        public Item healthItem;
+        public Item ammoItem;
+        
         [Space(10)]
         [Header("Parameters")]
         public float maxHealth = 50;
@@ -20,9 +26,11 @@ namespace Enemy
         public float smashRange = 1.5f;
         public bool isSoldier;
         public bool isSniper;
-    
+
+        private EnemyPoolController _enemyPoolController;
         private EnemyUI _enemyUI;
         private EnemyGun _enemyGun;
+        private Collider[] _colliders;
         private Animator _enemyAnimator;
         private NavMeshAgent _agent;
 
@@ -42,9 +50,11 @@ namespace Enemy
             currentHealth = maxHealth;
             _timer = _wanderTimer;
             _isNeedPatrol = isSoldier;
-        
+
+            _enemyPoolController = GetComponentInParent<EnemyPoolController>();
             _enemyUI = GetComponentInChildren<EnemyUI>();
             _enemyGun = GetComponentInChildren<EnemyGun>();
+            _colliders = GetComponentsInChildren<Collider>();
             _enemyAnimator = GetComponent<Animator>();
             _agent = GetComponent<NavMeshAgent>();
         
@@ -249,18 +259,64 @@ namespace Enemy
         
             currentHealth -= amount;
         
+            CheckToDeath();
+            _enemyUI.InstantiateDecreaseHealthBarAnimation(amount, nameCollider);
+            _enemyUI.ChangeHealth(currentHealth, maxHealth);
+        }
+
+        private void CheckToDeath()
+        {
             if (currentHealth <= 0)
             {
                 _isDead = true;
+                _agent.enabled = false;
                 currentHealth = 0;
-            
-                ChangeEnemyAnimation("Death",0,false);
+
+                foreach (var coll in _colliders)
+                {
+                    coll.enabled = false;
+                }
+
+                if (isSoldier)
+                {
+                    InstantiateRandomItemAfterDeath();
+                }
+                
                 _enemyUI.ChangeActiveHealthBar(false);
-                Destroy(gameObject,5);
+                _enemyPoolController.DecreaseCount();
+                
+                ChangeEnemyAnimation("Death",0,false);
+                Destroy(gameObject,3);
             }
-        
-            _enemyUI.InstantiateDecreaseHealthBarAnimation(amount, nameCollider);
-            _enemyUI.ChangeHealth(currentHealth, maxHealth);
+        }
+
+        private void InstantiateRandomItemAfterDeath()
+        {
+            var randomIndex = Random.Range(0, 3);
+
+            switch (randomIndex)
+            {
+                case 0:
+                {
+                    StartCoroutine(BaseInstantiateItem(healthItem));
+                    break;
+                }
+                case 1:
+                {
+                    StartCoroutine(BaseInstantiateItem(ammoItem));
+                    break;
+                }
+                case 2:
+                    break;
+            }
+        }
+
+        private IEnumerator BaseInstantiateItem(Item item)
+        {
+            var newItem = Instantiate(item.gameObject, transform.position, Quaternion.identity);
+            newItem.transform.DOJump(new Vector3(transform.position.x, 2, transform.position.z), 3, 0, 2);
+            yield return new WaitForSeconds(2);
+            newItem.GetComponent<Item>().ChangeActiveRigidbody(true);
         }
 
         public bool CheckIsDead()
